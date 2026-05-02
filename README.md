@@ -10,21 +10,26 @@ A professional, asynchronous Telegram bot designed to collect and manage user re
 
 ## 🛠 Tech Stack
 * **Language:** Python 3.10+
-* **Framework:** `python-telegram-bot` (v20+, Asyncio)
-* **Configuration:** `python-dotenv`
+* **Framework:** python-telegram-bot (v20+, Asyncio)
+* **Configuration:** python-dotenv
 
 ## ⚙️ Quick Start
 
 ### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
+```
+
 2. Configure Environment
 Create a .env file from the provided .env.example template and add your bot token:
 
-Plaintext
+```Plaintext
 BOT_TOKEN=your_token_here
 ADMIN_ID=your_id_here
 CHANNEL_ID=@your_channel_here
+```
 3. Launch the Bot
+```Bash
 python bot.py
+```
 Developed by [TimTech-dev]
