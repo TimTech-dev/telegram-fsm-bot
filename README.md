@@ -28,8 +28,10 @@ BOT_TOKEN=your_token_here
 ADMIN_ID=your_id_here
 CHANNEL_ID=@your_channel_here
 ```
-3. Launch the Bot
+
+3. Launch the Bot:
 ```Bash
 python bot.py
 ```
-Developed by [TimTech-dev]
+
+Developed by TimTech-dev
