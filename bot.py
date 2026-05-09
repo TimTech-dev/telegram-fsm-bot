@@ -1,4 +1,4 @@
-from telegram import Update, ReplyKeyboardMarkup
+from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import MessageHandler, CommandHandler, ContextTypes, ApplicationBuilder, ConversationHandler, filters
 import os
 from dotenv import load_dotenv
@@ -11,7 +11,7 @@ CHANNEL_ID = os.getenv("CHANNEL_ID", "@your_channel")
 ASK_NAME, ASK_REQUEST, CONFIRM, ASK_MORE, RESTART = range(5)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Enter your name:")
+    await update.message.reply_text("Enter your name:", reply_markup=ReplyKeyboardRemove())
     return ASK_NAME
 
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -42,7 +42,7 @@ async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard1 = [["More", "End"]]
 
     if text == "Yes" and request:
-        await update.message.reply_text("Request sent ✅")
+        await update.message.reply_text("Request sent ✅", reply_markup=ReplyKeyboardRemove())
         message = (
         f"<b>New request:</b>\n"
         f"<b>Name:</b> {context.user_data.get('name')}\n"
@@ -62,7 +62,7 @@ async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
 )
 
     else:
-        await update.message.reply_text("Request canceled ❌")
+        await update.message.reply_text("Request canceled ❌", reply_markup=ReplyKeyboardRemove())
 
     context.user_data.pop("request", None)
 
@@ -82,7 +82,7 @@ async def onemore(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ewe = update.message.text
     name = context.user_data.get("name")
     if ewe == "More":
-        await update.message.reply_text(f"{name}, please write your request:")
+        await update.message.reply_text(f"{name}, please write your request:", reply_markup=ReplyKeyboardRemove())
         return ASK_REQUEST
     elif ewe == "End":
         reply_markup = ReplyKeyboardMarkup(
@@ -100,7 +100,7 @@ async def onemore(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     res = update.message.text
     if res == "Start Over":
-        await update.message.reply_text("Enter your name:")
+        await update.message.reply_text("Enter your name:", reply_markup=ReplyKeyboardRemove())
         return ASK_NAME
 
     return ASK_NAME
@@ -111,15 +111,23 @@ conversation_handler = ConversationHandler(
     states={
         ASK_REQUEST: [MessageHandler(filters.TEXT &~filters.COMMAND, get_request)],
         CONFIRM: [MessageHandler(filters.Regex("^(Yes|No)$"), confirm)],
-        ASK_NAME: [MessageHandler(filters.TEXT &~filters.COMMAND, get_name)],
-        ASK_MORE: [MessageHandler(filters.TEXT &~filters.COMMAND, onemore)],
-        RESTART: [MessageHandler(filters.TEXT &~filters.COMMAND, restart)]
+        ASK_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
+        ASK_MORE: [MessageHandler(filters.TEXT & ~filters.COMMAND, onemore)],
+        RESTART: [MessageHandler(filters.TEXT & ~filters.COMMAND, restart)]
     },
     fallbacks=[]
 )
 
 app = ApplicationBuilder().token(TOKEN).build()
 app.add_handler(conversation_handler)
+
+async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Type /start to begin.",
+        reply_markup=ReplyKeyboardRemove()
+    )
+
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
 
 app.run_polling()
 
