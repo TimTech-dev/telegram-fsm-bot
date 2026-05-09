@@ -71,7 +71,7 @@ async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
         resize_keyboard=True
         )
     await update.message.reply_text(
-        "Send another request?",
+        "Do you want to send another request?",
         reply_markup=reply_markup
         )
 
@@ -109,25 +109,23 @@ async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
 conversation_handler = ConversationHandler(
     entry_points=[CommandHandler("start", start)],
     states={
-        ASK_REQUEST: [MessageHandler(filters.TEXT &~filters.COMMAND, get_request)],
+        ASK_REQUEST: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_request)],
         CONFIRM: [MessageHandler(filters.Regex("^(Yes|No)$"), confirm)],
         ASK_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
-        ASK_MORE: [MessageHandler(filters.TEXT & ~filters.COMMAND, onemore)],
+        ASK_MORE: [MessageHandler(filters.Regex("^(More|End)$"), onemore)],
         RESTART: [MessageHandler(filters.TEXT & ~filters.COMMAND, restart)]
     },
     fallbacks=[]
 )
 
-app = ApplicationBuilder().token(TOKEN).build()
+
+async def post_init(app):
+    await app.bot.send_message(ADMIN_ID, text = (
+    "🟢 Bot is online\n\n"
+    "👉 Type /start to begin"))
+
+app = ApplicationBuilder().token(TOKEN).post_init(post_init).build()
 app.add_handler(conversation_handler)
-
-async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Type /start to begin.",
-        reply_markup=ReplyKeyboardRemove()
-    )
-
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
 
 app.run_polling()
 
